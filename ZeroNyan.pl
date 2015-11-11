@@ -11,9 +11,14 @@ item(castle,[armor,shield,maps]).
 item(armory,[desk,sword]).
 item(dragon_treasury,[princess]).
 
+:- dynamic position/1.
 position(bedroom).
 
 
+:- dynamic inventory/1.
+inventory([]).
+
+/* RULES */
 start :- 
 	write('Tio the Shining Armor'),nl,
 	write('Welcome to Tio\'s World where nothing is important!'),nl,
@@ -26,10 +31,27 @@ start :-
 	write('--take(object)'),nl,
 	write('--sharpen(object)'),nl,
 	write('--quit').
+
+look :- 
+	position(X),write('You are located at '),write(X),nl,
+	item(X,Y),write('You can see '),write(Y),nl,
+	inventory(Z),write('Currently you have'),write(Z),nl.
 	
-look :-
-	position(X),write(X).
-	
+sleeping :-
+	position(X),X==bedroom,write('You are sleeping').
+readmap :-
+	inventory(X),member(X,maps),
+	write('._____________________________________________________________.'),nl,
+	write('|            |            |             |                     |'),nl,
+	write('|            |            |             |                     |'),nl,
+	write('|   bedroom  |   castle   |   armory    |   dragon_treasury   |'),nl,
+	write('|            |            |             |                     |'),nl,
+	write('|____________|____________|_____________|_____________________|').
+
+goto(X) :- retract(position(Y)),room(X),assert(position(X)),write(X).
+
+take(X) :- position(X),item(X,Y),write(Y).
+
 
 
 
