@@ -6,16 +6,16 @@ beside(armory,castle).
 beside(armory,dragon_treasury).
 beside(dragon_treasury,armory).
 
+:- dynamic(item/2).
 item(bedroom,[bed]).
 item(castle,[armor,shield,maps]).
 item(armory,[desk,sword]).
 item(dragon_treasury,[princess]).
 
-:- dynamic position/1.
-position(bedroom).
+:- dynamic(position/1).
 
 
-:- dynamic inventory/1.
+:- dynamic(inventory/1).
 inventory([]).
 
 /* RULES */
@@ -30,17 +30,18 @@ start :-
 	write('--goto(place)'),nl,
 	write('--take(object)'),nl,
 	write('--sharpen(object)'),nl,
-	write('--quit').
+	write('--quit'),
+	asserta(position(bedroom)).
 
 look :- 
 	position(X),write('You are located at '),write(X),nl,
 	item(X,Y),write('You can see '),write(Y),nl,
-	inventory(Z),write('Currently you have'),write(Z),nl.
+	inventory(Z),write('Currently you have '),write(Z),!.
 	
 sleeping :-
 	position(X),X==bedroom,write('You are sleeping').
 readmap :-
-	inventory(X),member(X,maps),
+	inventory(X),member(maps,X),
 	write('._____________________________________________________________.'),nl,
 	write('|            |            |             |                     |'),nl,
 	write('|            |            |             |                     |'),nl,
@@ -48,9 +49,13 @@ readmap :-
 	write('|            |            |             |                     |'),nl,
 	write('|____________|____________|_____________|_____________________|').
 
-goto(X) :- retract(position(Y)),room(X),assert(position(X)),write(X).
+goto(X) :- position(Y),beside(Y,X),retract(position(Y)),asserta(position(X)),write(X),true.
 
-take(X) :- position(X),item(X,Y),write(Y).
+take(X) :- 
+	inventory(L),position(Y),item(Y,Z),member(X,Z),
+	append([X],L,Lout),retract(inventory(L)),asserta(inventory(Lout)),
+	subtract(Z,[X],Litem),retract(item(Y,Z)),asserta(item(Y,Litem)),
+	!,write('Tio took a '),write(X),write(' and put it in his bag.').
 
 
 
