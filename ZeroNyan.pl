@@ -40,6 +40,9 @@ look :-
 	
 sleeping :-
 	position(X),X==bedroom,write('You are sleeping').
+
+readmap :-
+	inventory(Z), \+ member(maps, Z), write('You can\'t read map because you don\'t have it'), fail.
 readmap :-
 	inventory(X),member(maps,X),
 	write('._____________________________________________________________.'),nl,
@@ -47,9 +50,10 @@ readmap :-
 	write('|            |            |             |                     |'),nl,
 	write('|   bedroom  |   castle   |   armory    |   dragon_treasury   |'),nl,
 	write('|            |            |             |                     |'),nl,
-	write('|____________|____________|_____________|_____________________|').
+	write('|____________|____________|_____________|_____________________|'), fail.
 
-goto(X) :- position(Y),beside(Y,X),retract(position(Y)),asserta(position(X)),write(X),true.
+goto(X) :- position(Y), \+ beside(Y,X), write('You can\'t go there from here'), fail.
+goto(X) :- position(Y),beside(Y,X),retract(position(Y)),asserta(position(X)),write(X), fail.
 
 take(X) :- 
 	inventory(L),position(Y),item(Y,Z),member(X,Z),
