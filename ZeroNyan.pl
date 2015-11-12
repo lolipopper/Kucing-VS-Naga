@@ -31,6 +31,7 @@ start :-
 	write('--take(object)'),nl,
 	write('--sharpen(object)'),nl,
 	write('--quit'),
+	retract(position(X)),
 	asserta(position(bedroom)).
 
 look :- 
