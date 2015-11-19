@@ -6,6 +6,8 @@ beside(armory,castle).
 beside(armory,dragon_treasury).
 beside(dragon_treasury,armory).
 
+requirement([sharp_sword, armor, shield]).
+
 :- dynamic(item/2).
 
 :- dynamic(position/1).
@@ -24,7 +26,7 @@ start :-
 	write('--goto(place)'),nl,
 	write('--take(object)'),nl,
 	write('--sharpen(object)'),nl,
-	write('--quit'),
+	write('--quit'),nl,
 	retractall(position(X)),
 	retractall(item(Z, Y)),
 	retractall(inventory(V)),
@@ -33,22 +35,35 @@ start :-
 	asserta(item(castle,[armor,shield,maps])),
 	asserta(item(armory,[desk,sword])),
 	asserta(item(dragon_treasury,[princess])),
-	asserta(position(bedroom)).
+	asserta(position(castle)),
+	repeat,
+		nl, nl, write('> '), read(X), do(X),
+		X == quit, !.
+
+do(look) :- look, !.
+do(sleeping) :- sleeping, !.
+do(readmap) :- readmap, !.
+do(goto(X)) :- goto(X), !.
+do(take(X)) :- take(X), !.
+do(sharpen(X)) :- sharpen(X), !.
+do(quit) :- ! .
+do(_) :- write('Invalid command.').
+
 
 look :- 
 	position(X),write('You are located at '),write(X),nl,
-	item(X,Y),write('You can see '),write(Y),nl,
-	inventory(Z),write('Currently you have '),write(Z),!.
+	item(X,Y),write('You can see : '),writeList(Y),nl,
+	inventory(Z),write('Currently you have : '),writeList(Z),!.
 
 sleeping :-
-	position(X),X \== bedroom,write('Kowe ora iso turu nang kene say <3!'), fail.
+	position(X),X \== bedroom,write('You should go to the bedroom first.'), !.
 sleeping :-
-	position(X),X==bedroom, item(X,Y), \+ member(bed, Y), write('Kowe nang kamar, nanging ora ono kasure'), fail.
+	position(X),X==bedroom, item(X,Y), \+ member(bed, Y), write('You\'re in the bedroom, but there\'s no bed'), !.
 sleeping :-
-	position(X),X==bedroom, item(X,Y), member(bed, Y), write('Kowe saiki turu nang kasur ing kamar'), fail.
+	position(X),X==bedroom, item(X,Y), member(bed, Y), write('Have a good night O Tio, Knight in Shining Armor').
 
 readmap :-
-	inventory(Z), \+ member(maps, Z), write('You can\'t read map because you don\'t have it'), fail.
+	inventory(Z), \+ member(maps, Z), write('You can\'t read map because you don\'t have it'), !.
 readmap :-
 	inventory(X),member(maps,X),
 	write('._____________________________________________________________.'),nl,
@@ -56,14 +71,19 @@ readmap :-
 	write('|            |            |             |                     |'),nl,
 	write('|   bedroom  |   castle   |   armory    |   dragon_treasury   |'),nl,
 	write('|            |            |             |                     |'),nl,
-	write('|____________|____________|_____________|_____________________|'), fail.
+	write('|____________|____________|_____________|_____________________|').
 
-goto(X) :- position(Y), X == Y, write('Kowe saiki wis nang kono say <3!!'), fail.
-goto(X) :- position(Y), X \== Y, \+ beside(Y,X), write('You can\'t go there from here'), fail.
-goto(X) :- position(Y),beside(Y,X),retract(position(Y)),asserta(position(X)),write(X), fail.
+goto(X) :- position(Y), X == Y, write('You\'re currently in the '), write(Y), !.
+goto(X) :- position(Y), X \== Y, \+ beside(Y,X), write('You can\'t go there from here'), !.
+goto(X) :- position(Y),beside(Y,X),retract(position(Y)),asserta(position(X)),look.
 
 take(X) :-
-	position(Y), item(Y,Z), \+ member(X,Z), write('Sorry! No '),write(X), write(' in here.'), fail.
+	position(Y), item(Y,Z), \+ member(X,Z), write('Sorry! No '),write(X), write(' in here.'), !.
+
+take(X) :-
+	X == princess, inventory(L), position(Y), item(Y,Z), member(X,Z),
+	requirement(R), \+ isAllMember(R, L), write('You can\'t take the princess because you don\'t have the requirements : '),
+	writeList(R), !.
 
 take(X) :- 
 	X \== princess, inventory(L),position(Y),item(Y,Z),member(X,Z),
@@ -83,13 +103,19 @@ sharpen(X) :-
 	select(X, Z, Y),
 	retract(inventory(Z)),
 	asserta(inventory([sharp_sword|Y])),
-	write('Your sword is now sharp'), nl,
-	fail.
+	write('Your sword is now sharp'),
+	!.
 
 sharpen(X) :-
-	X \== sword, write('Iku duduk pedang say <3!!'), fail.
+	X \== sword, write('It\'s not a sword.'), !.
 
 sharpen(X) :-
 	X == sword, inventory(Z), \+ member(X, Z),
-	write('Kowe gak nduwe pedang say <3!'), fail.
+	write('You don\'t have any sword.').
 
+isAllMember([], _).
+isAllMember([H|T], Z) :- member(H, Z), isAllMember(T, Z).
+
+writeList([]).
+writeList([H]) :- write(H), !.
+writeList([H|T]) :- write(H), write(', '), writeList(T).
