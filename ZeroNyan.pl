@@ -46,7 +46,7 @@ do(readmap) :- readmap, !.
 do(goto(X)) :- goto(X), !.
 do(take(X)) :- take(X), !.
 do(sharpen(X)) :- sharpen(X), !.
-do(quit) :- ! .
+do(quit) :- quit, ! .
 do(_) :- write('Invalid command.').
 
 
@@ -96,7 +96,7 @@ take(X) :-
 	member(sharp_sword, L), member(armor, L), member(shield, L),
 	append([X],L,Lout),retract(inventory(L)),asserta(inventory(Lout)),
 	subtract(Z,[X],Litem),retract(item(Y,Z)),asserta(item(Y,Litem)),
-	!,write('Tio took a '),write(X),write(' and put it in his bag.').
+	!, write('Congratulations! Tio has found his true love <3').
 
 sharpen(X) :-
 	X == sword, inventory(Z), member(X, Z),
@@ -112,6 +112,9 @@ sharpen(X) :-
 sharpen(X) :-
 	X == sword, inventory(Z), \+ member(X, Z),
 	write('You don\'t have any sword.').
+
+quit :-
+	write('Thanks for playing!').
 
 isAllMember([], _).
 isAllMember([H|T], Z) :- member(H, Z), isAllMember(T, Z).
